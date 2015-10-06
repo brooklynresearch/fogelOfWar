@@ -3,9 +3,8 @@
 #include "ofMain.h"
 #include "ofxOsc.h"
 #include "ofxGui.h"
-#include "ofxMediaType.h"
 
-#define HOST "192.168.0.130"
+#define HOST "192.168.2.2"
 #define PORT 9998
 
 class ofApp : public ofBaseApp{
@@ -33,11 +32,7 @@ class ofApp : public ofBaseApp{
         ofVideoPlayer ledSource;
         ofVideoPlayer screenSource1;
         ofVideoPlayer screenSource2;
-    
-        // gui vars
-        ofxPanel gui;
-        ofxToggle sendSliderColor;
-        ofxColorSlider color;
+        int increment;
     
         // OSC Sender
         ofxOscSender sender;

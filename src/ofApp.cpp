@@ -20,10 +20,8 @@ void ofApp::setup(){
     ledSource.play();
     screenSource1.play();
     screenSource2.play();
-    
-    gui.setup();
-    gui.add(sendSliderColor.setup("Color Slider", false));
-    gui.add(color.setup("color",ofColor(100,100,140),ofColor(0,0),ofColor(255,255)));
+
+    increment = 60;
     
     sender.setup(HOST, PORT);
     
@@ -57,60 +55,31 @@ void ofApp::update(){
     screenSource2.update();
     ledSource.update();
     
-    if(_debug && sendSliderColor){
-        ofColor readSlider = color;
-        int red     = readSlider.r;
-        int green   = readSlider.g;
-        int blue    = readSlider.b;
-        
-        if (red != prevR ||
-            green != prevG ||
-            blue != prevB){
-            
-            ofxOscMessage m;
-            
-            m.setAddress("/led");
-            m.addIntArg(255);
-            m.addIntArg(red);
-            m.addIntArg(green);
-            m.addIntArg(blue);
-            
-            sendMessage(m);
-            
-            prevR = red;
-            prevG = green;
-            prevB = blue;
-        }
-        
-    }
+    // get first pixel color
+    unsigned char * pixels = ledSource.getPixels();
+    int nChannels = ledSource.getPixelsRef().getNumChannels();
+    int widthOfLine = ledSource.width;  // how long is a line of pixels
+    int red     = pixels[(0 * widthOfLine) * nChannels    ];
+    int green   = pixels[(0 * widthOfLine) * nChannels + 1];
+    int blue    = pixels[(0 * widthOfLine) * nChannels + 2];
     
-    else{
-        // get first pixel color
-        unsigned char * pixels = ledSource.getPixels();
-        int nChannels = ledSource.getPixelsRef().getNumChannels();
-        int widthOfLine = ledSource.width;  // how long is a line of pixels
-        int red     = pixels[(0 * widthOfLine) * nChannels    ];
-        int green   = pixels[(0 * widthOfLine) * nChannels + 1];
-        int blue    = pixels[(0 * widthOfLine) * nChannels + 2];
+    if (red != prevR ||
+        green != prevG ||
+        blue != prevB){
         
-        if (red != prevR ||
-            green != prevG ||
-            blue != prevB){
-            
-            ofxOscMessage m;
-            
-            m.setAddress("/led");
-            m.addIntArg(255);
-            m.addIntArg(red);
-            m.addIntArg(green);
-            m.addIntArg(blue);
-            
-            sendMessage(m);
-            
-            prevR = red;
-            prevG = green;
-            prevB = blue;
-        }
+        ofxOscMessage m;
+        
+        m.setAddress("/led");
+        m.addIntArg(255);
+        m.addIntArg(red);
+        m.addIntArg(green);
+        m.addIntArg(blue);
+        
+        sendMessage(m);
+        
+        prevR = red;
+        prevG = green;
+        prevB = blue;
     }
     // debug
     if (_debug) {
@@ -131,7 +100,6 @@ void ofApp::draw(){
     
     if(_debug){
         ledSource.draw(0,0,200,200);
-        gui.draw();
         ofSetColor(mouseColor);
         ofRect(mouseX, mouseY, 10, 10);
         ofSetColor(255,255,255);
@@ -141,11 +109,38 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+    int currentFrameCount = screenSource1.getCurrentFrame();
+    
     switch(key) {
         case OF_KEY_LEFT:
             
+            
+            if(currentFrameCount <= increment){
+                screenSource1.setFrame(0);
+                screenSource2.setFrame(0);
+                ledSource.setFrame(0);
+            }
+            
+            else {
+                screenSource1.setFrame(currentFrameCount - increment);
+                screenSource2.setFrame(currentFrameCount - increment);
+                ledSource.setFrame(currentFrameCount - increment);
+            }
+            
             break;
         case OF_KEY_RIGHT:
+
+            if(currentFrameCount + increment > screenSource1.getTotalNumFrames()){
+                screenSource1.setFrame(screenSource1.getTotalNumFrames());
+                screenSource2.setFrame(screenSource2.getTotalNumFrames());
+                ledSource.setFrame(ledSource.getTotalNumFrames());
+            }
+            
+            else {
+                screenSource1.setFrame(currentFrameCount + increment);
+                screenSource2.setFrame(currentFrameCount + increment);
+                ledSource.setFrame(currentFrameCount + increment);
+            }
             
             break;
         
