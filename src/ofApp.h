@@ -4,8 +4,8 @@
 #include "ofxOsc.h"
 #include "ofxGui.h"
 
-#define HOST "192.168.2.2"
-#define PORT 9998
+//#define HOST "192.168.2.2"
+//#define PORT 9998
 
 class ofApp : public ofBaseApp{
 
@@ -24,18 +24,38 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
+        void drawTimeline(int x, int y);
+        void drawTimecode(int x, int y);
+    
         void sendMessage(ofxOscMessage msg);
+    
+        ofXml XML;
     
         string getFileName(string path);
     
         // display vars
         ofVideoPlayer ledSource;
+        ofVideoPlayer ledSource2;
         ofVideoPlayer screenSource1;
         ofVideoPlayer screenSource2;
         int increment;
     
+        // xml vars
+        int numPis;
+        string HOST;
+        string HOST2;
+        int PORT;
+        int PORT2;
+    
+        // timeline vars
+        int timelineX;
+        int timelineY;
+        int timelineWidth;
+        int timelineHeight;
+    
         // OSC Sender
         ofxOscSender sender;
+        ofxOscSender sender2;
     
         // OSC Receiver
         ofxOscReceiver receiver;
@@ -50,4 +70,8 @@ class ofApp : public ofBaseApp{
         int prevR;
 		int prevG;
         int prevB;
+    
+        int prevR2;
+        int prevG2;
+        int prevB2;
 };

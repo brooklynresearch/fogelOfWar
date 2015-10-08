@@ -3,27 +3,69 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    if (XML.load("settings.xml") ){
+        ofLog() << "XML loaded" << endl;
+    }
     
-    _debug = true;
+    else {
+        // if nonexistent, create
+        XML.addChild("SETTINGS");
+        XML.setTo("SETTINGS");
+    }
+    
+    _debug = false;
+    
+    if(XML.exists("//NUMPIS")) {
+        numPis = XML.getValue<int>("//NUMPIS");
+        ofLog() << "loaded NUMPIS: " << ofToString(numPis) << endl;
+    } else {
+        numPis = 1;
+    }
+    
+    if(XML.exists("//HOST")) {
+        HOST = XML.getValue<string>("//HOST");
+        ofLog() << "loaded HOST: " << ofToString(HOST) << endl;
+    } else {
+        HOST = "192.168.2.2";
+    }
+    
+    if(XML.exists("//PORT")) {
+        PORT = XML.getValue<int>("PORT");
+        ofLog() << "loaded PORT: " << ofToString(PORT) << endl;
+    } else {
+        PORT = 9998;
+    }
+    
+    if (numPis > 1) {
+        if(XML.exists("//HOST2")) {
+            HOST2 = XML.getValue<string>("//HOST2");
+            ofLog() << "loaded HOST2: " << ofToString(HOST2) << endl;
+        } else {
+            HOST2 = "192.168.2.3";
+        }
+        
+        if(XML.exists("//PORT2")) {
+            PORT2 = XML.getValue<int>("PORT2");
+            ofLog() << "loaded PORT2: " << ofToString(PORT2) << endl;
+        } else {
+            PORT2 = 9998;
+        }
+    }
     
     // directory listing
     string ledPath = "ledVid/active/";
+    string ledPath2 = "ledVid2/active/";
     string screenPath1 = "screenVid_1/active/";
     string screenPath2 = "screenVid_2/active/";
+    
+    sender.setup(HOST, PORT);
     
     // video sync
     ledSource.loadMovie(getFileName(ledPath));
     screenSource1.loadMovie(getFileName(screenPath1));
     screenSource2.loadMovie(getFileName(screenPath2));
     
-    // video play
-    ledSource.play();
-    screenSource1.play();
-    screenSource2.play();
-
     increment = 60;
-    
-    sender.setup(HOST, PORT);
     
     ofSetColor(255,255,255);
     ofBackground(0,0,0);
@@ -34,6 +76,29 @@ void ofApp::setup(){
     ledSource.setLoopState(OF_LOOP_NONE);
     screenSource1.setLoopState(OF_LOOP_NONE);
     screenSource2.setLoopState(OF_LOOP_NONE);
+    
+    if (numPis > 1) {
+        
+        sender2.setup(HOST2, PORT2);
+        
+        ledSource2.loadMovie(getFileName(ledPath));
+        ledSource2.setLoopState(OF_LOOP_NONE);
+    }
+    
+    // timeline vars
+    timelineX = 600;
+    timelineY = 600;
+    timelineWidth = 600;
+    timelineHeight = 120;
+    
+    // video play
+    ledSource.play();
+    screenSource1.play();
+    screenSource2.play();
+    
+    if (numPis > 1){
+        ledSource2.play();
+    }
 }
 
 //--------------------------------------------------------------
@@ -50,10 +115,44 @@ void ofApp::update(){
         screenSource1.play();
         screenSource2.firstFrame();
         ledSource.firstFrame();
+        
+        if (numPis > 1) {
+            ledSource2.firstFrame();
+        }
     }
     
     screenSource2.update();
     ledSource.update();
+    
+    if (numPis > 1) {
+        ledSource2.update();
+        // get first pixel color
+        unsigned char * pixels = ledSource2.getPixels();
+        int nChannels = ledSource2.getPixelsRef().getNumChannels();
+        int widthOfLine = ledSource2.width;  // how long is a line of pixels
+        int red     = pixels[(0 * widthOfLine) * nChannels    ];
+        int green   = pixels[(0 * widthOfLine) * nChannels + 1];
+        int blue    = pixels[(0 * widthOfLine) * nChannels + 2];
+        
+        if (red != prevR2 ||
+            green != prevG2 ||
+            blue != prevB2){
+            
+            ofxOscMessage m;
+            
+            m.setAddress("/led");
+            m.addIntArg(255);
+            m.addIntArg(red);
+            m.addIntArg(green);
+            m.addIntArg(blue);
+            
+            sender2.sendMessage(m);
+            
+            prevR2 = red;
+            prevG2 = green;
+            prevB2 = blue;
+        }
+    }
     
     // get first pixel color
     unsigned char * pixels = ledSource.getPixels();
@@ -75,12 +174,13 @@ void ofApp::update(){
         m.addIntArg(green);
         m.addIntArg(blue);
         
-        sendMessage(m);
+        sender.sendMessage(m);
         
         prevR = red;
         prevG = green;
         prevB = blue;
     }
+    
     // debug
     if (_debug) {
 //        ofLog() <<  ofToString(red) << ", " << ofToString(green) << ", " << ofToString(blue) << endl;
@@ -100,6 +200,11 @@ void ofApp::draw(){
     
     if(_debug){
         ledSource.draw(0,0,200,200);
+        if(numPis > 1) {
+            ledSource.draw(200,0,200,200);
+        }
+        drawTimeline(timelineX, timelineY);
+        drawTimecode(timelineX, timelineY);
         ofSetColor(mouseColor);
         ofRect(mouseX, mouseY, 10, 10);
         ofSetColor(255,255,255);
@@ -201,12 +306,47 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-
+    if(_debug){
+        
+        mouseX = x;
+        mouseY = y;
+        
+        if(x > timelineX && y > timelineY
+           && x < timelineX + timelineWidth
+           && y < timelineY + timelineHeight) {
+            
+            float newPosition = ofMap( float(x - timelineX), 0, float(timelineWidth), 0, 1);
+            
+            screenSource1.setPosition(newPosition);
+            screenSource2.setPosition(newPosition);
+            ledSource.setPosition(newPosition);
+            
+            if(numPis > 1){
+                ledSource2.setPosition(newPosition);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    // clicked within timeline
+    if(_debug){
+        if(x > timelineX && y > timelineY
+           && x < timelineX + timelineWidth
+           && y < timelineY + timelineHeight) {
+            
+            float newPosition = ofMap( float(x - timelineX), 0, float(timelineWidth), 0, 1);
+            
+            screenSource1.setPosition(newPosition);
+            screenSource2.setPosition(newPosition);
+            ledSource.setPosition(newPosition);
+            
+            if(numPis > 1){
+                ledSource2.setPosition(newPosition);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -242,6 +382,34 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 void ofApp::sendMessage(ofxOscMessage msg) {
 //    ofLog() << "sending message" << endl;
     sender.sendMessage(msg);
+}
+
+void ofApp::drawTimeline(int x, int y) {
+    ofSetColor(0,0,255);
+    ofRect(x, y, timelineWidth, timelineHeight);
+    ofSetColor(255,255,255);
+    ofRect(x, y +  10, int(screenSource1.getPosition()*timelineWidth), timelineHeight - 10);
+    ofSetColor(255);
+}
+
+void ofApp::drawTimecode(int x, int y) {
+    // calculate current time
+    int currentSeconds = int(screenSource1.getDuration() * screenSource1.getPosition());
+    
+    string timeString = ofToString(currentSeconds / 60) + ":";
+    
+    if(currentSeconds % 60 > 9){
+        timeString = timeString + ofToString(currentSeconds % 60);
+    }
+    else{
+        timeString = timeString + "0" + ofToString(currentSeconds % 60);
+    }
+    
+    ofLog() << "seconds at: " << ofToString(currentSeconds) << endl;
+    
+    ofSetColor(255,255,255);
+    ofDrawBitmapString(timeString, x, y);
+    
 }
 
 string ofApp::getFileName(string path) {
