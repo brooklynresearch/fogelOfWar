@@ -65,7 +65,8 @@ void ofApp::setup(){
     screenSource1.loadMovie(getFileName(screenPath1));
     screenSource2.loadMovie(getFileName(screenPath2));
     
-    increment = 60;
+    direction_increment = 1;
+    arrow_increment = 60;
     
     ofSetColor(255,255,255);
     ofBackground(0,0,0);
@@ -220,35 +221,71 @@ void ofApp::keyPressed(int key){
         case OF_KEY_LEFT:
             
             
-            if(currentFrameCount <= increment){
+            if(currentFrameCount <= direction_increment){
                 screenSource1.setFrame(0);
                 screenSource2.setFrame(0);
                 ledSource.setFrame(0);
             }
             
             else {
-                screenSource1.setFrame(currentFrameCount - increment);
-                screenSource2.setFrame(currentFrameCount - increment);
-                ledSource.setFrame(currentFrameCount - increment);
+                screenSource1.setFrame(currentFrameCount - direction_increment);
+                screenSource2.setFrame(currentFrameCount - direction_increment);
+                ledSource.setFrame(currentFrameCount - direction_increment);
             }
             
             break;
         case OF_KEY_RIGHT:
 
-            if(currentFrameCount + increment > screenSource1.getTotalNumFrames()){
+            if(currentFrameCount + direction_increment > screenSource1.getTotalNumFrames()){
                 screenSource1.setFrame(screenSource1.getTotalNumFrames());
                 screenSource2.setFrame(screenSource2.getTotalNumFrames());
                 ledSource.setFrame(ledSource.getTotalNumFrames());
             }
             
             else {
-                screenSource1.setFrame(currentFrameCount + increment);
-                screenSource2.setFrame(currentFrameCount + increment);
-                ledSource.setFrame(currentFrameCount + increment);
+                screenSource1.setFrame(currentFrameCount + direction_increment);
+                screenSource2.setFrame(currentFrameCount + direction_increment);
+                ledSource.setFrame(currentFrameCount + direction_increment);
             }
             
             break;
-        
+            
+        case '<':
+        case ',':
+            
+            
+            if(currentFrameCount <= arrow_increment){
+                screenSource1.setFrame(0);
+                screenSource2.setFrame(0);
+                ledSource.setFrame(0);
+            }
+            
+            else {
+                screenSource1.setFrame(currentFrameCount - arrow_increment);
+                screenSource2.setFrame(currentFrameCount - arrow_increment);
+                ledSource.setFrame(currentFrameCount - arrow_increment);
+            }
+            
+            break;
+            
+        case '>':
+        case '.':
+            
+            if(currentFrameCount + arrow_increment > screenSource1.getTotalNumFrames()){
+                screenSource1.setFrame(screenSource1.getTotalNumFrames());
+                screenSource2.setFrame(screenSource2.getTotalNumFrames());
+                ledSource.setFrame(ledSource.getTotalNumFrames());
+            }
+            
+            else {
+                screenSource1.setFrame(currentFrameCount + arrow_increment);
+                screenSource2.setFrame(currentFrameCount + arrow_increment);
+                ledSource.setFrame(currentFrameCount + arrow_increment);
+            }
+            
+            break;
+            
+
         case ' ':
             if(screenSource1.isPaused()){
                 ledSource.setPaused(false);

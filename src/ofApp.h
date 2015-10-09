@@ -38,7 +38,8 @@ class ofApp : public ofBaseApp{
         ofVideoPlayer ledSource2;
         ofVideoPlayer screenSource1;
         ofVideoPlayer screenSource2;
-        int increment;
+        int direction_increment;
+        int arrow_increment;
     
         // xml vars
         int numPis;
