@@ -100,6 +100,14 @@ void ofApp::setup(){
     if (numPis > 1){
         ledSource2.play();
     }
+    
+    screenSource1.firstFrame();
+    screenSource2.firstFrame();
+    ledSource.firstFrame();
+    
+    if (numPis > 1) {
+        ledSource2.firstFrame();
+    }
 }
 
 //--------------------------------------------------------------
