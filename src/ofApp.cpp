@@ -109,24 +109,37 @@ void ofApp::update(){
     
     // screenVid1 update
     screenSource1.update();
+    screenSource2.update();
+    ledSource.update();
+    
+    if (numPis > 1) {
+        ledSource2.update();
+    }
     
     if(screenSource1.getIsMovieDone()){
         ofLog() << "movie finished " << endl;
         
-        screenSource1.play();
+        screenSource1.firstFrame();
         screenSource2.firstFrame();
         ledSource.firstFrame();
         
         if (numPis > 1) {
             ledSource2.firstFrame();
         }
+        
+        screenSource1.play();
+        screenSource2.play();
+        ledSource.play();
+        
+        if (numPis > 1) {
+            ledSource2.play();
+        }
     }
     
-    screenSource2.update();
-    ledSource.update();
+    
     
     if (numPis > 1) {
-        ledSource2.update();
+        
         // get first pixel color
         unsigned char * pixels = ledSource2.getPixels();
         int nChannels = ledSource2.getPixelsRef().getNumChannels();
