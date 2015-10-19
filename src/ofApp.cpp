@@ -26,7 +26,7 @@ void ofApp::setup(){
         HOST = XML.getValue<string>("//HOST");
         ofLog() << "loaded HOST: " << ofToString(HOST) << endl;
     } else {
-        HOST = "192.168.2.2";
+        HOST = "192.168.2.3";
     }
     
     if(XML.exists("//PORT")) {
@@ -108,6 +108,14 @@ void ofApp::setup(){
     if (numPis > 1) {
         ledSource2.firstFrame();
     }
+    
+    prevR = -1;
+    prevG = -1;
+    prevB = -1;
+    
+    prevR2 = -1;
+    prevG2 = -1;
+    prevB2 = -1;
 }
 
 //--------------------------------------------------------------
