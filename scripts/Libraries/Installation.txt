@@ -1,0 +1,4 @@
+To install libaries:
+Unzip the folders
+Go to path of extracted folders
+sudo python setup.py install
