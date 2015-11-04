@@ -26,7 +26,7 @@ void ofApp::setup(){
         HOST = XML.getValue<string>("//HOST");
         ofLog() << "loaded HOST: " << ofToString(HOST) << endl;
     } else {
-        HOST = "192.168.2.3";
+        HOST = "192.168.1.3";
     }
     
     if(XML.exists("//PORT")) {
@@ -36,20 +36,18 @@ void ofApp::setup(){
         PORT = 9998;
     }
     
-    if (numPis > 1) {
-        if(XML.exists("//HOST2")) {
-            HOST2 = XML.getValue<string>("//HOST2");
-            ofLog() << "loaded HOST2: " << ofToString(HOST2) << endl;
-        } else {
-            HOST2 = "192.168.2.3";
-        }
-        
-        if(XML.exists("//PORT2")) {
-            PORT2 = XML.getValue<int>("PORT2");
-            ofLog() << "loaded PORT2: " << ofToString(PORT2) << endl;
-        } else {
-            PORT2 = 9998;
-        }
+    if(XML.exists("//HOST2")) {
+        HOST2 = XML.getValue<string>("//HOST2");
+        ofLog() << "loaded HOST2: " << ofToString(HOST2) << endl;
+    } else {
+        HOST2 = "192.168.1.4";
+    }
+    
+    if(XML.exists("//PORT2")) {
+        PORT2 = XML.getValue<int>("PORT2");
+        ofLog() << "loaded PORT2: " << ofToString(PORT2) << endl;
+    } else {
+        PORT2 = 9998;
     }
     
     // directory listing
@@ -59,6 +57,7 @@ void ofApp::setup(){
     string screenPath2 = "screenVid_2/active/";
     
     sender.setup(HOST, PORT);
+    sender2.setup(HOST2, PORT2);
     
     // video sync
     ledSource.loadMovie(getFileName(ledPath));
@@ -80,7 +79,7 @@ void ofApp::setup(){
     
     if (numPis > 1) {
         
-        sender2.setup(HOST2, PORT2);
+        
         
         ledSource2.loadMovie(getFileName(ledPath));
         ledSource2.setLoopState(OF_LOOP_NONE);
@@ -205,6 +204,9 @@ void ofApp::update(){
         m.addIntArg(blue);
         
         sender.sendMessage(m);
+        if(numPis == 1){
+            sender2.sendMessage(m);
+        }
         
         prevR = red;
         prevG = green;
